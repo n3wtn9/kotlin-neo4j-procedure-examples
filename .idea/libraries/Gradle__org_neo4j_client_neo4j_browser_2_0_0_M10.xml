@@ -1,0 +1,11 @@
+<component name="libraryTable">
+  <library name="Gradle: org.neo4j.client:neo4j-browser:2.0.0-M10">
+    <CLASSES>
+      <root url="jar://$USER_HOME$/.gradle/caches/modules-2/files-2.1/org.neo4j.client/neo4j-browser/2.0.0-M10/b96a9700096781d72e547cbd4e06fc85cf65994f/neo4j-browser-2.0.0-M10.jar!/" />
+    </CLASSES>
+    <JAVADOC />
+    <SOURCES>
+      <root url="jar://$USER_HOME$/.gradle/caches/modules-2/files-2.1/org.neo4j.client/neo4j-browser/2.0.0-M10/95c7a343c593233ecc57de3459fc253705934a10/neo4j-browser-2.0.0-M10-sources.jar!/" />
+    </SOURCES>
+  </library>
+</component>

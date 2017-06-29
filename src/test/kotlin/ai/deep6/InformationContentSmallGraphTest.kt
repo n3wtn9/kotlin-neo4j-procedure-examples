@@ -2,6 +2,7 @@ package ai.deep6
 
 import org.junit.Before
 import org.junit.Rule
+import org.junit.Test
 import org.neo4j.driver.v1.Config
 import org.neo4j.driver.v1.Driver
 import org.neo4j.driver.v1.GraphDatabase
@@ -17,6 +18,7 @@ class InformationContentSmallGraphTest {
 
     @Rule @JvmField
     val neo4j = Neo4jRule()
+            .withProcedure(InformationContent::class.java)
             .withFixture(
                 """
                 CREATE
@@ -39,5 +41,10 @@ class InformationContentSmallGraphTest {
     fun setup() {
         driver = GraphDatabase.driver(neo4j.boltURI(), Config.build().withEncryptionLevel(Config.EncryptionLevel.NONE).toConfig())
         session = driver.session()
+    }
+
+    @Test
+    fun helloWorldCalInformationContent() {
+        session.run("MATCH (root:Concept{str:'root'}) CALL deep6.semantic.calculateInfoContent(root) RETURN *")
     }
 }

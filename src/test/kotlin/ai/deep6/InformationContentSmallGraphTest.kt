@@ -18,7 +18,7 @@ class InformationContentSmallGraphTest {
 
     @Rule @JvmField
     val neo4j = Neo4jRule()
-            .withProcedure(InformationContent::class.java)
+            .withProcedure(InformationContentService::class.java)
             .withFixture(
                 """
                 CREATE

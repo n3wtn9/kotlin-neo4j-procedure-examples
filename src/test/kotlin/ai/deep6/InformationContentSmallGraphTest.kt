@@ -30,7 +30,7 @@ class InformationContentSmallGraphTest {
                 (bacteria:Concept{str:'bacteria'}),
                 (ecoli:Concept{str:'ecoli'}),
 
-                (root)-[:PARENT_OF]->(animal)-[:PARENT_OF]->(vertebrate)
+                (root)-[:PARENT_OF]->(animal)-[:PARENT_OF]->(vertebrate),
                 (vertebrate)-[:PARENT_OF]->(cat),
                 (vertebrate)-[:PARENT_OF]->(dog),
                 (root)-[:PARENT_OF]->(bacteria)-[:PARENT_OF]->(ecoli)
@@ -45,6 +45,7 @@ class InformationContentSmallGraphTest {
 
     @Test
     fun helloWorldCalInformationContent() {
-        session.run("MATCH (root:Concept{str:'root'}) CALL deep6.semantic.calculateInfoContent(root) RETURN *")
+        val result = session.run("MATCH (n:Concept{str:'dog'}) CALL deep6.calculateInfoContent(n) RETURN *")
+        println(result.list().size)
     }
 }

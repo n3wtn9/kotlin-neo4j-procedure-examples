@@ -40,12 +40,16 @@ class InformationContentSmallGraphTest {
     @Before
     fun setup() {
         driver = GraphDatabase.driver(neo4j.boltURI(), Config.build().withEncryptionLevel(Config.EncryptionLevel.NONE).toConfig())
-        session = driver.session()
     }
 
     @Test
     fun helloWorldCalInformationContent() {
-        val result = session.run("MATCH (n:Concept{str:'dog'}) CALL deep6.calculateInfoContent(n) RETURN *")
-        println(result.list().size)
+        driver.session().use {
+            it.run("MATCH (n:Concept{str:'root'}) CALL deep6.calculateInfoContent(n) RETURN *")
+            it.run("MATCH (n:Concept{str:'animal'}) CALL deep6.calculateInfoContent(n) RETURN *")
+            it.run("MATCH (n:Concept{str:'vertebrate'}) CALL deep6.calculateInfoContent(n) RETURN *")
+            it.run("MATCH (n:Concept{str:'cat'}) CALL deep6.calculateInfoContent(n) RETURN *")
+            it.run("MATCH (n:Concept{str:'dog'}) CALL deep6.calculateInfoContent(n) RETURN *")
+        }
     }
 }

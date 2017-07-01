@@ -6,6 +6,7 @@ import org.neo4j.graphdb.RelationshipType
 import org.neo4j.kernel.internal.GraphDatabaseAPI
 import org.neo4j.logging.Log
 import org.neo4j.procedure.*
+import java.util.stream.Stream
 
 /**
  * Created by newton on 6/29/17.
@@ -21,6 +22,6 @@ class InformationContentService {
     @Description("Calculate the information content given a root node")
     fun calculateInfoContent(@Name("startNode") startNode: Node) {
         val ic = InformationContent(db)
-        ic.calculate(startNode)
+        println("node: ${startNode.getProperty("str")}, ic ${ic.calculate(startNode)}")
     }
 }

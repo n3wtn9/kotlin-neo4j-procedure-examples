@@ -34,7 +34,7 @@ class ExampleTest {
 
     @Test
     fun shouldConcatStringCorrectly() {
-        val result = session.run("RETURN example.concat(['name','surname'],';') AS result")
+        val result = session.run("RETURN ai.deep6.concat(['name','surname'],';') AS result")
         assertThat  (result.single().get("result").asString(), IsEqual.equalTo("name;surname"))
     }
 
@@ -42,8 +42,9 @@ class ExampleTest {
     fun shouldConnectNodesCorrectly() {
         session.run("CREATE (p:From)")
         session.run("CREATE (p:To)")
-        session.run("""MATCH (f:From), (t:To)
-                       CALL example.connect(f,'KNOWS',t)
+        session.run("""
+                       MATCH (f:From), (t:To)
+                       CALL ai.deep6.connect(f,'KNOWS',t)
                        RETURN *
                     """)
         val result = session.run("MATCH p=(f:From)-[:KNOWS]->(t:To) RETURN p")

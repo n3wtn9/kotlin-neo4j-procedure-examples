@@ -16,8 +16,12 @@ import kotlin.streams.toList
 class InformationContent {
     val nodeToRoot: TraversalDescription
     val nodeToLeaf: TraversalDescription
+    val rootToNode: TraversalDescription
+
     val log: Log
     val log2adjust : Double
+
+    val leafCountProperty = "leafCount"
 
     constructor(log: Log, db: GraphDatabaseAPI) {
         log2adjust = 1.0 / Math.log(2.0)
@@ -25,6 +29,8 @@ class InformationContent {
         nodeToRoot = db.traversalDescription()
                 .relationships(REL.PARENT_OF, Direction.INCOMING)
         nodeToLeaf = db.traversalDescription()
+                .relationships(REL.PARENT_OF, Direction.OUTGOING)
+        rootToNode = db.traversalDescription()
                 .relationships(REL.PARENT_OF, Direction.OUTGOING)
     }
 
@@ -57,5 +63,35 @@ class InformationContent {
         val num = Math.log(maxLeaves + 1.0)
         val ic = log2adjust * ( num - denom )
         return ic
+    }
+
+    fun calculateRootToNodeIC(rootNode: Node) {
+        val maxLeaves = rootToNode.traverse(rootNode).stream().filter { !it.endNode().hasRelationship(REL.PARENT_OF, Direction.OUTGOING) }.count().toDouble()
+        val num = Math.log(maxLeaves + 1.0)
+
+        rootToNode.traverse(rootNode).stream().forEach {
+            val subsumerCount = it.length() + 1.0
+
+            var leafCount =
+            if(it.endNode().hasProperty(leafCountProperty))
+                it.endNode().getProperty("leafCount") as Double
+            else countLeaves(it.endNode())
+
+            val denom = Math.log(leafCount / subsumerCount + 1.0)
+            val infoContent = log2adjust * ( num - denom )
+            
+            it.endNode().setProperty("infoContent", infoContent)
+        }
+    }
+
+    fun countLeaves(child: Node): Double {
+        val leafCount = nodeToLeaf.traverse(child).stream()
+                .filter { !it.endNode().hasRelationship(REL.PARENT_OF, Direction.OUTGOING) }
+                .count()
+                .toDouble()
+
+        child.setProperty(leafCountProperty, leafCount)
+
+        return leafCount
     }
 }

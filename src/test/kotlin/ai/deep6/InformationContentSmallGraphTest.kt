@@ -45,11 +45,21 @@ class InformationContentSmallGraphTest {
     @Test
     fun helloWorldCalInformationContent() {
         driver.session().use {
-            it.run("MATCH (n:Concept{str:'root'}) CALL deep6.calculateInfoContent(n) RETURN *")
-            it.run("MATCH (n:Concept{str:'animal'}) CALL deep6.calculateInfoContent(n) RETURN *")
-            it.run("MATCH (n:Concept{str:'vertebrate'}) CALL deep6.calculateInfoContent(n) RETURN *")
-            it.run("MATCH (n:Concept{str:'cat'}) CALL deep6.calculateInfoContent(n) RETURN *")
-            it.run("MATCH (n:Concept{str:'dog'}) CALL deep6.calculateInfoContent(n) RETURN *")
+            it.run("MATCH (n:Concept{str:'root'}) CALL ai.deep6.calculateInfoContent(n) RETURN *")
+            it.run("MATCH (n:Concept{str:'animal'}) CALL ai.deep6.calculateInfoContent(n) RETURN *")
+            it.run("MATCH (n:Concept{str:'vertebrate'}) CALL ai.deep6.calculateInfoContent(n) RETURN *")
+            it.run("MATCH (n:Concept{str:'cat'}) CALL ai.deep6.calculateInfoContent(n) RETURN *")
+            it.run("MATCH (n:Concept{str:'dog'}) CALL ai.deep6.calculateInfoContent(n) RETURN *")
+        }
+    }
+
+    @Test
+    fun calculateInfoContentFromRootTest() {
+        driver.session().use {
+            it.run("MATCH (n:Concept{str:'root'}) CALL ai.deep6.calculateInfoContentFromRoot(n) RETURN *")
+
+            val results = it.run("MATCH (n:Concept) RETURN n")
+            results.forEach{ it.values().forEach { println(it.asNode().values().toList().joinToString()) } }
         }
     }
 }

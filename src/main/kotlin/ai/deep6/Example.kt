@@ -12,14 +12,14 @@ class Example {
     @Context
     lateinit var log: Log
 
-    @Procedure(value = "example.connect", mode = Mode.WRITE)
+    @Procedure(value = "ai.deep6.connect", mode = Mode.WRITE)
     @Description("Conncet 2 nodes with given relationship")
     fun connect(@Name("from") from: Node, @Name("type") type: String, @Name("to") to: Node) {
         from.createRelationshipTo(to, RelationshipType.withName(type))
         log.info("Created a new relationship using connect.")
     }
 
-    @UserFunction(value = "example.concat")
+    @UserFunction(value = "ai.deep6.concat")
     @Description("example.concat(['s1','s2',...], delimiter) - join the given strings with the given delimiter.")
     fun concat(@Name("strings") strings: List<String>?, @Name("delimiter") delimiter: String?): String {
         val _strings = strings ?: listOf()

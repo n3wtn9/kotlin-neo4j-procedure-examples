@@ -7,12 +7,15 @@ buildscript {
 
     repositories {
         mavenCentral()
+        jcenter()
     }
     dependencies {
         classpath "org.jetbrains.kotlin:kotlin-gradle-plugin:$kotlin_version"
+        classpath 'com.github.jengelman.gradle.plugins:shadow:2.0.1'
     }
 }
 
+apply plugin: 'com.github.johnrengelman.shadow'
 apply plugin: 'java'
 apply plugin: 'kotlin'
 
@@ -37,7 +40,6 @@ dependencies {
 //    testCompile "org.neo4j:neo4j-io:$neo4j_version"
     compileOnly group: 'org.neo4j', name: 'neo4j', version:"$neo4j_version"
 }
-
 
 compileKotlin {
     kotlinOptions.jvmTarget = "1.8"

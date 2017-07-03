@@ -7,6 +7,7 @@ import org.neo4j.graphdb.Node
 import org.neo4j.graphdb.RelationshipType
 import org.neo4j.graphdb.traversal.TraversalDescription
 import org.neo4j.kernel.internal.GraphDatabaseAPI
+import org.neo4j.logging.Log
 import kotlin.streams.toList
 
 /**
@@ -15,8 +16,12 @@ import kotlin.streams.toList
 class InformationContent {
     val nodeToRoot: TraversalDescription
     val nodeToLeaf: TraversalDescription
+    val log: Log
+    val log2adjust : Double
 
-    constructor(db: GraphDatabaseAPI) {
+    constructor(log: Log, db: GraphDatabaseAPI) {
+        log2adjust = 1.0 / Math.log(2.0)
+        this.log = log
         nodeToRoot = db.traversalDescription()
                 .relationships(REL.PARENT_OF, Direction.INCOMING)
         nodeToLeaf = db.traversalDescription()
@@ -28,19 +33,19 @@ class InformationContent {
                 .filter { !it.endNode().hasRelationship(REL.PARENT_OF, Direction.INCOMING) }
                 .toList()
 
-        if (rootPath.size > 1) println("more than one root?!!?")
+        if (rootPath.size > 1) log.info("more than one root?!!?")
 
         val path = rootPath.get(0)
         val root = path.endNode()
         val subsumerCount = path.length().toDouble() + 1.0
-        println("str: ${path.endNode().getProperty("str")}, subsumer count: ${path.length() + 1}")
+//        log.info("str: ${path.endNode().getProperty("str")}, subsumer count: ${path.length() + 1}")
 
         val leaves = nodeToLeaf.traverse(startNode).stream()
                 .filter { !it.endNode().hasRelationship(REL.PARENT_OF, Direction.OUTGOING) }
                 .toList()
 
-        println("has x leaves: ${leaves.size}")
-        leaves.forEach { println("str: ${it.endNode().getProperty("str")}") }
+//        println("has x leaves: ${leaves.size}")
+//        leaves.forEach { println("str: ${it.endNode().getProperty("str")}") }
         val leafCount = leaves.size.toDouble()
 
         val maxLeaves = nodeToLeaf.traverse(root).stream()
@@ -48,9 +53,9 @@ class InformationContent {
                 .count()
                 .toDouble()
 
-        val log2adjust = 1.0 / Math.log(2.0)
-        val denom = log2adjust * Math.log(leafCount / subsumerCount + 1.0)
-        val num = log2adjust * Math.log(maxLeaves + 1.0)
-        return num - denom
+        val denom = Math.log(leafCount / subsumerCount + 1.0)
+        val num = Math.log(maxLeaves + 1.0)
+        val ic = log2adjust * ( num - denom )
+        return ic
     }
 }

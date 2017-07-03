@@ -21,7 +21,7 @@ class InformationContentService {
     @Procedure(value = "deep6.calculateInfoContent", mode = Mode.WRITE)
     @Description("Calculate the information content given a root node")
     fun calculateInfoContent(@Name("startNode") startNode: Node) {
-        val ic = InformationContent(db)
-        println("node: ${startNode.getProperty("str")}, ic ${ic.calculate(startNode)}")
+        val ic = InformationContent(log,db)
+        println("node: ${startNode.getProperty("str")}, info content ${ic.calculate(startNode)}")
     }
 }

@@ -34,6 +34,7 @@ class InformationContent {
                 .relationships(REL.PARENT_OF, Direction.OUTGOING)
     }
 
+    @Deprecated("old code")
     fun calculate(startNode: Node): Double {
         val rootPath = nodeToRoot.traverse(startNode).stream()
                 .filter { !it.endNode().hasRelationship(REL.PARENT_OF, Direction.INCOMING) }
@@ -79,7 +80,7 @@ class InformationContent {
 
             val denom = Math.log(leafCount / subsumerCount + 1.0)
             val infoContent = log2adjust * ( num - denom )
-            
+
             it.endNode().setProperty("infoContent", infoContent)
         }
     }

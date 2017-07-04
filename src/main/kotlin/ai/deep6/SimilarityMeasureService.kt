@@ -2,16 +2,19 @@ package ai.deep6
 
 import org.neo4j.graphdb.Label
 import org.neo4j.graphdb.Node
+import org.neo4j.graphdb.Path
 import org.neo4j.graphdb.RelationshipType
 import org.neo4j.kernel.internal.GraphDatabaseAPI
 import org.neo4j.logging.Log
 import org.neo4j.procedure.*
 import java.util.stream.Stream
+import kotlin.streams.asSequence
+import kotlin.streams.toList
 
 /**
  * Created by newton on 6/29/17.
  */
-class InformationContentService {
+class SimilarityMeasureService {
     @Context
     lateinit var db: GraphDatabaseAPI
 
@@ -31,4 +34,11 @@ class InformationContentService {
         val ic = InformationContent(log,db)
         ic.calculateRootToNodeIC(rootNode)
     }
+
+//    @Procedure(value = "ai.deep6.similarityPathIc")
+//    @Description("Calculate the similarity based on path and information content")
+//    fun similarityPathIc(@Name("concept1") concept1: Node, @Name("concept2") concept2: Node): Stream<Path> {
+//        val sm = SimilarityMeasure(db)
+//        return sm.calcualteSimilarityPathIc(concept1,concept2)
+//    }
 }

@@ -8,6 +8,7 @@ import org.neo4j.driver.v1.Driver
 import org.neo4j.driver.v1.GraphDatabase
 import org.neo4j.driver.v1.Session
 import org.neo4j.harness.junit.Neo4jRule
+import scala.util.matching.Regex
 
 /**
  * Created by newton on 6/29/17.
@@ -18,7 +19,7 @@ class InformationContentSmallGraphTest {
 
     @Rule @JvmField
     val neo4j = Neo4jRule()
-            .withProcedure(InformationContentService::class.java)
+            .withProcedure(SimilarityMeasureService::class.java)
             .withFixture(
                 """
                 CREATE
@@ -60,6 +61,19 @@ class InformationContentSmallGraphTest {
 
             val results = it.run("MATCH (n:Concept) RETURN n")
             results.forEach{ it.values().forEach { println(it.asNode().values().toList().joinToString()) } }
+        }
+    }
+
+    @Test
+    fun calculateSimilarlityPathIcMeasure() {
+        driver.session().use {
+            val results = it.run("""
+                MATCH (c1:Concept{str:'dog'}), (c2:Concept{str:'ecoli'})
+                CALL ai.deep6.similarityPathIc(c1,c2)
+                RETURN *
+            """)
+
+            println(results.list().size)
         }
     }
 }

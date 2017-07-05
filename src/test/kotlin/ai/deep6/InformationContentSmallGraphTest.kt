@@ -83,10 +83,16 @@ class InformationContentSmallGraphTest {
     @Test
     fun calculateSimilarityPathIcMeasureFunc() {
         driver.session().use {
+            it.run("""
+                MATCH (n:Concept{str:'root'})
+                CALL ai.deep6.calculateInfoContentFromRoot(n)
+                RETURN *
+                """)
+
             val results = it.run("""
                 MATCH (c1:Concept{str:'dog'}), (c2:Concept{str:'ecoli'})
                 RETURN ai.deep6.similarityPathIc(c1,c2)
-            """)
+                """)
 
             println(results.single().values().toList().joinToString())
         }

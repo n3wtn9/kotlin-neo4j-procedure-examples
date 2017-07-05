@@ -35,10 +35,19 @@ class SimilarityMeasureService {
         ic.calculateRootToNodeIC(rootNode)
     }
 
+//    class PathRes(@JvmField val result: Path)
+//
 //    @Procedure(value = "ai.deep6.similarityPathIc")
 //    @Description("Calculate the similarity based on path and information content")
-//    fun similarityPathIc(@Name("concept1") concept1: Node, @Name("concept2") concept2: Node): Stream<Path> {
+//    fun similarityPathIc(@Name("concept1") concept1: Node, @Name("concept2") concept2: Node): Stream<PathRes> {
 //        val sm = SimilarityMeasure(db)
-//        return sm.calcualteSimilarityPathIc(concept1,concept2)
+//        return sm.calcualteSimilarityPathIc(concept1,concept2).map(::PathRes)
 //    }
+
+    @UserFunction(value = "ai.deep6.similarityPathIc")
+    @Description("Function to calculate similarity based on path and information content")
+    fun similarityPathIcFunc(@Name("concept1") concept1: Node, @Name("concept2") concept2: Node): Double {
+        val sm = SimilarityMeasure(db)
+        return sm.calcualteSimilarityPathIc(concept1, concept2)
+    }
 }

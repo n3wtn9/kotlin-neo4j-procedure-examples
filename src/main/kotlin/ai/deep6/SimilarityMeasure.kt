@@ -9,6 +9,7 @@ import org.neo4j.graphdb.traversal.Evaluators
 import org.neo4j.graphdb.traversal.TraversalDescription
 import org.neo4j.kernel.internal.GraphDatabaseAPI
 import java.util.stream.Stream
+import kotlin.streams.toList
 
 /**
  * Created by newton on 7/3/17.
@@ -22,10 +23,13 @@ class SimilarityMeasure {
                 .relationships(REL.PARENT_OF)
     }
 
-    fun calcualteSimilarityPathIc(concept1: Node, concept2: Node): Stream<Path> {
-        return conceptsPath
+    fun calcualteSimilarityPathIc(concept1: Node, concept2: Node): Double {
+        val pathResults = conceptsPath
                 .evaluator(Evaluators.endNodeIs<Any>(Evaluation.INCLUDE_AND_CONTINUE, Evaluation.EXCLUDE_AND_CONTINUE, concept2))
                 .traverse(concept1)
                 .stream()
+                .toList()
+
+        return 0.0
     }
 }

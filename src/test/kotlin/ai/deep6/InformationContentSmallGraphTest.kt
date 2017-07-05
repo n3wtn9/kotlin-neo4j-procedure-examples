@@ -1,6 +1,7 @@
 package ai.deep6
 
 import org.junit.Before
+import org.junit.Ignore
 import org.junit.Rule
 import org.junit.Test
 import org.neo4j.driver.v1.Config
@@ -20,6 +21,7 @@ class InformationContentSmallGraphTest {
     @Rule @JvmField
     val neo4j = Neo4jRule()
             .withProcedure(SimilarityMeasureService::class.java)
+            .withFunction(SimilarityMeasureService::class.java)
             .withFixture(
                 """
                 CREATE
@@ -64,16 +66,29 @@ class InformationContentSmallGraphTest {
         }
     }
 
+    @Ignore
     @Test
     fun calculateSimilarlityPathIcMeasure() {
         driver.session().use {
             val results = it.run("""
                 MATCH (c1:Concept{str:'dog'}), (c2:Concept{str:'ecoli'})
-                CALL ai.deep6.similarityPathIc(c1,c2)
-                RETURN *
+                CALL ai.deep6.similarityPathIc(c1,c2) YIELD result
+                RETURN result
             """)
 
             println(results.list().size)
+        }
+    }
+
+    @Test
+    fun calculateSimilarityPathIcMeasureFunc() {
+        driver.session().use {
+            val results = it.run("""
+                MATCH (c1:Concept{str:'dog'}), (c2:Concept{str:'ecoli'})
+                RETURN ai.deep6.similarityPathIc(c1,c2)
+            """)
+
+            println(results.single().values().toList().joinToString())
         }
     }
 }

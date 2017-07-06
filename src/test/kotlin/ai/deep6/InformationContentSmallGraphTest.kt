@@ -127,7 +127,7 @@ class InformationContentSmallGraphTest {
     }
 
     @Test
-    fun calculateSimScore() {
+    fun calculateSimScoreTest() {
         driver.session().use {
             it.run("""
                 MATCH (n:Concept{str:'root'})
@@ -141,6 +141,15 @@ class InformationContentSmallGraphTest {
                 """)
 
             println(results.single().values().get(0).asDouble())
+        }
+    }
+
+    @Test
+    fun simPathDebug() {
+        driver.session().use {
+            it.run("""
+                CALL ai.deep6.similarityPathDebug('Concept','str','dog','animal')
+                """)
         }
     }
 

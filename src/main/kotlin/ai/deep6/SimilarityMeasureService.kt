@@ -1,9 +1,11 @@
 package ai.deep6
 
+import org.neo4j.cypher.internal.frontend.v2_3.ast.functions.Relationships
 import org.neo4j.graphdb.Label
 import org.neo4j.graphdb.Node
 import org.neo4j.graphdb.Path
 import org.neo4j.graphdb.RelationshipType
+import org.neo4j.kernel.builtinprocs.SchemaProcedure
 import org.neo4j.kernel.internal.GraphDatabaseAPI
 import org.neo4j.logging.Log
 import org.neo4j.procedure.*
@@ -49,5 +51,15 @@ class SimilarityMeasureService {
     fun similarityPathIcFunc(@Name("concept1") concept1: Node, @Name("concept2") concept2: Node): Double {
         val sm = SimilarityMeasure(db)
         return sm.calcualteSimilarityPathIc(concept1, concept2)
+    }
+
+//    class GraphResult(@JvmField val nodes: List<Node>, @JvmField val relationships: List<Relationships>)
+
+    @Procedure
+    fun similarityPathDebug(@Name("label") label: String,@Name("propKey") propKey: String,@Name("propValue1") propValue1: String,@Name("propValue2") propValue2: String): Stream<SchemaProcedure.GraphResult> {
+        val sm = SimilarityMeasure(db)
+        val c1Node = db.findNode(Label.label(label), propKey, propValue1)
+        val c2Node = db.findNode(Label.label(label), propKey, propValue2)
+        return sm.similarityPathDebug(c1Node, c2Node)
     }
 }

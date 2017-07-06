@@ -8,6 +8,7 @@ import org.neo4j.graphdb.traversal.Evaluation
 import org.neo4j.graphdb.traversal.Evaluator
 import org.neo4j.graphdb.traversal.Evaluators
 import org.neo4j.graphdb.traversal.TraversalDescription
+import org.neo4j.kernel.builtinprocs.SchemaProcedure
 import org.neo4j.kernel.internal.GraphDatabaseAPI
 import java.util.stream.Stream
 import kotlin.streams.toList
@@ -61,5 +62,25 @@ class SimilarityMeasure {
         val similarityScore = 1 / (distance + 1)
 
         return similarityScore
+    }
+
+    fun similarityPathDebug(concept1: Node, concept2: Node): Stream<SchemaProcedure.GraphResult> {
+        val pathResults = conceptsPath
+                .evaluator(Evaluators.endNodeIs<Any>(Evaluation.INCLUDE_AND_CONTINUE, Evaluation.EXCLUDE_AND_CONTINUE, concept2))
+                .traverse(concept1)
+                .stream()
+                .toList()
+
+        // Deal with multiple results
+        val path = when (pathResults.size) {
+            0 -> return listOf(SchemaProcedure.GraphResult(listOf(), listOf())).stream()
+            1 -> pathResults.first()
+            else -> {
+                println("Ahh multiple paths found between 2 concepts...choosing shortest one.")
+                pathResults.sortedBy { it.length() }.first()
+            }
+        }
+
+        return listOf(SchemaProcedure.GraphResult(path.nodes().toList(), path.relationships().toList())).stream()
     }
 }

@@ -1,10 +1,11 @@
 package ai.deep6
 
 import ai.deep6.constants.REL
-import com.sun.corba.se.impl.orbutil.graph.Graph
 import org.neo4j.graphdb.Direction
 import org.neo4j.graphdb.Node
-import org.neo4j.graphdb.RelationshipType
+import org.neo4j.graphdb.Path
+import org.neo4j.graphdb.traversal.Evaluation
+import org.neo4j.graphdb.traversal.Evaluator
 import org.neo4j.graphdb.traversal.TraversalDescription
 import org.neo4j.kernel.internal.GraphDatabaseAPI
 import org.neo4j.logging.Log
@@ -22,16 +23,25 @@ class InformationContent {
     val log2adjust : Double
 
     val leafCountProperty = "leafCount"
+    val informationContentProperty = "infoContent"
 
-    constructor(log: Log, db: GraphDatabaseAPI) {
+    constructor(log: Log, db: GraphDatabaseAPI, sourceProperty: String, sourceOnthology: String) {
         log2adjust = 1.0 / Math.log(2.0)
         this.log = log
         nodeToRoot = db.traversalDescription()
+                .depthFirst()
                 .relationships(REL.PARENT_OF, Direction.INCOMING)
+                .evaluator(SourceOntologyEvaluator(sourceProperty, sourceOnthology))
+
         nodeToLeaf = db.traversalDescription()
+                .depthFirst()
                 .relationships(REL.PARENT_OF, Direction.OUTGOING)
+                .evaluator(SourceOntologyEvaluator(sourceProperty, sourceOnthology))
+
         rootToNode = db.traversalDescription()
+                .depthFirst()
                 .relationships(REL.PARENT_OF, Direction.OUTGOING)
+                .evaluator(SourceOntologyEvaluator(sourceProperty, sourceOnthology))
     }
 
     @Deprecated("old code")
@@ -75,13 +85,13 @@ class InformationContent {
 
             var leafCount =
             if(it.endNode().hasProperty(leafCountProperty))
-                it.endNode().getProperty("leafCount") as Double
+                it.endNode().getProperty(leafCountProperty) as Double
             else countLeaves(it.endNode())
 
             val denom = Math.log(leafCount / subsumerCount + 1.0)
             val infoContent = log2adjust * ( num - denom )
 
-            it.endNode().setProperty("infoContent", infoContent)
+            it.endNode().setProperty(informationContentProperty, infoContent)
         }
     }
 
@@ -94,5 +104,14 @@ class InformationContent {
         child.setProperty(leafCountProperty, leafCount)
 
         return leafCount
+    }
+
+    class SourceOntologyEvaluator(val sourceProperty: String, val sourceOnthology: String): Evaluator {
+        override fun evaluate(path: Path?): Evaluation {
+            if (path!!.endNode().hasProperty(sourceProperty) && path.endNode().getProperty(sourceProperty).equals(sourceOnthology))
+                return Evaluation.INCLUDE_AND_CONTINUE
+            else
+                return Evaluation.EXCLUDE_AND_PRUNE
+        }
     }
 }

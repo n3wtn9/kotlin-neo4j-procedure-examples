@@ -25,6 +25,7 @@ class SimilarityMeasure {
 
     constructor(db: GraphDatabaseAPI) {
         conceptsPath = db.traversalDescription()
+                .depthFirst()
                 .relationships(REL.PARENT_OF)
     }
 

@@ -23,15 +23,15 @@ class SimilarityMeasureService {
 
     @Procedure(value = "ai.deep6.calculateInfoContent", mode = Mode.WRITE)
     @Description("Calculate the information content from node")
-    fun calculateInfoContent(@Name("startNode") startNode: Node) {
-        val ic = InformationContent(log,db)
+    fun calculateInfoContent(@Name("startNode") startNode: Node, @Name("sourceProperty") sourceProperty: String, @Name("sourceOntology") sourceOnthology: String) {
+        val ic = InformationContent(log,db, sourceProperty, sourceOnthology)
         println("node: ${startNode.getProperty("str")}, info content ${ic.calculate(startNode)}")
     }
 
     @Procedure(value = "ai.deep6.calculateInfoContentFromRoot", mode = Mode.WRITE)
     @Description("Calculate the information content given a root node")
-    fun calculateInfoContentFromRoot(@Name("rootNode") rootNode: Node) {
-        val ic = InformationContent(log,db)
+    fun calculateInfoContentFromRoot(@Name("rootNode") rootNode: Node, @Name("sourceProperty") sourceProperty: String, @Name("sourceOntology") sourceOnthology: String) {
+        val ic = InformationContent(log,db, sourceProperty, sourceOnthology)
         ic.calculateRootToNodeIC(rootNode)
     }
 

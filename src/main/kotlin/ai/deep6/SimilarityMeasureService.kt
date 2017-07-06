@@ -25,41 +25,25 @@ class SimilarityMeasureService {
 
     @Procedure(value = "ai.deep6.calculateInfoContent", mode = Mode.WRITE)
     @Description("Calculate the information content from node")
-    fun calculateInfoContent(@Name("startNode") startNode: Node, @Name("sourceProperty") sourceProperty: String, @Name("sourceOntology") sourceOnthology: String) {
+    fun calculateInfoContent(@Name("startNode") startNode: Node, @Name("sourcePropKey") sourceProperty: String, @Name("sourceOntology") sourceOnthology: String) {
         val ic = InformationContent(log,db, sourceProperty, sourceOnthology)
         println("node: ${startNode.getProperty("str")}, info content ${ic.calculate(startNode)}")
     }
 
     @Procedure(value = "ai.deep6.calculateInfoContentFromRoot", mode = Mode.WRITE)
     @Description("Calculate the information content given a root node")
-    fun calculateInfoContentFromRoot(@Name("rootNode") rootNode: Node, @Name("sourceProperty") sourceProperty: String, @Name("sourceOntology") sourceOnthology: String) {
+    fun calculateInfoContentFromRoot(@Name("rootNode") rootNode: Node, @Name("sourcePropKey") sourceProperty: String, @Name("sourceOntology") sourceOnthology: String) {
         val ic = InformationContent(log,db, sourceProperty, sourceOnthology)
         ic.calculateRootToNodeIC(rootNode)
     }
 
-//    class PathRes(@JvmField val result: Path)
-//
-//    @Procedure(value = "ai.deep6.similarityPathIc")
-//    @Description("Calculate the similarity based on path and information content")
-//    fun similarityPathIc(@Name("concept1") concept1: Node, @Name("concept2") concept2: Node): Stream<PathRes> {
-//        val sm = SimilarityMeasure(db)
-//        return sm.calcualteSimilarityPathIc(concept1,concept2).map(::PathRes)
-//    }
-
-    @UserFunction(value = "ai.deep6.similarityPathIc")
+    @UserFunction
     @Description("Function to calculate similarity based on path and information content")
-    fun similarityPathIcFunc(@Name("concept1") concept1: Node, @Name("concept2") concept2: Node): Double {
-        val sm = SimilarityMeasure(db)
-        return sm.calcualteSimilarityPathIc(concept1, concept2)
-    }
-
-//    class GraphResult(@JvmField val nodes: List<Node>, @JvmField val relationships: List<Relationships>)
-
-    @Procedure
-    fun similarityPathDebug(@Name("label") label: String,@Name("propKey") propKey: String,@Name("propValue1") propValue1: String,@Name("propValue2") propValue2: String): Stream<SchemaProcedure.GraphResult> {
-        val sm = SimilarityMeasure(db)
-        val c1Node = db.findNode(Label.label(label), propKey, propValue1)
-        val c2Node = db.findNode(Label.label(label), propKey, propValue2)
-        return sm.similarityPathDebug(c1Node, c2Node)
+    fun similarityPathIc(@Name("sourcePropKey") sourcePropKey: String,
+                         @Name("sourcePropValue") sourcePropValue: String,
+                         @Name("concept1") concept1: Node,
+                         @Name("concept2") concept2: Node): Double {
+        val sm = SimilarityMeasure(log,db,sourcePropKey,sourcePropValue)
+        return sm.calculateSimilarityPathIcBiDi(concept1, concept2)
     }
 }

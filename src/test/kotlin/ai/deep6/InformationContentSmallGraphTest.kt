@@ -10,7 +10,6 @@ import org.neo4j.driver.v1.Driver
 import org.neo4j.driver.v1.GraphDatabase
 import org.neo4j.driver.v1.Session
 import org.neo4j.harness.junit.Neo4jRule
-import scala.util.matching.Regex
 
 /**
  * Created by newton on 6/29/17.
@@ -95,21 +94,8 @@ class InformationContentSmallGraphTest {
         }
     }
 
-//    @Test
-//    fun calculateSimilarlityPathIcMeasure() {
-//        driver.session().use {
-//            val results = it.run("""
-//                MATCH (c1:Concept{str:'dog'}), (c2:Concept{str:'ecoli'})
-//                CALL ai.deep6.similarityPathIc(c1,c2) YIELD result
-//                RETURN result
-//            """)
-//
-//            println(results.list().size)
-//        }
-//    }
-
     @Test
-    fun calculateSimilarityPathIcMeasureFunc() {
+    fun calculateSimilarityPathIcMeasure() {
         driver.session().use {
             it.run("""
                 MATCH (n:Concept{str:'root'})
@@ -119,7 +105,7 @@ class InformationContentSmallGraphTest {
 
             val results = it.run("""
                 MATCH (c1:Concept{str:'dog'}), (c2:Concept{str:'ecoli'})
-                RETURN ai.deep6.similarityPathIc(c1,c2)
+                RETURN ai.deep6.similarityPathIc('sab','LIFE',c1,c2)
                 """)
 
             assertEquals(0.2345746960501983, results.single().values().get(0).asDouble(), 0.0)
@@ -137,20 +123,10 @@ class InformationContentSmallGraphTest {
 
             val results = it.run("""
                 MATCH (c1:Concept{str:'dog'}), (c2:Concept{str:'animal'})
-                RETURN ai.deep6.similarityPathIc(c1,c2)
+                RETURN ai.deep6.similarityPathIc('sab','LIFE',c1,c2)
                 """)
 
             println(results.single().values().get(0).asDouble())
         }
     }
-
-    @Test
-    fun simPathDebug() {
-        driver.session().use {
-            it.run("""
-                CALL ai.deep6.similarityPathDebug('Concept','str','dog','animal')
-                """)
-        }
-    }
-
 }

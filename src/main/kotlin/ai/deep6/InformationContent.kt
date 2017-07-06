@@ -3,9 +3,6 @@ package ai.deep6
 import ai.deep6.constants.REL
 import org.neo4j.graphdb.Direction
 import org.neo4j.graphdb.Node
-import org.neo4j.graphdb.Path
-import org.neo4j.graphdb.traversal.Evaluation
-import org.neo4j.graphdb.traversal.Evaluator
 import org.neo4j.graphdb.traversal.TraversalDescription
 import org.neo4j.kernel.internal.GraphDatabaseAPI
 import org.neo4j.logging.Log
@@ -25,23 +22,23 @@ class InformationContent {
     val leafCountProperty = "leafCount"
     val informationContentProperty = "infoContent"
 
-    constructor(log: Log, db: GraphDatabaseAPI, sourceProperty: String, sourceOnthology: String) {
+    constructor(log: Log, db: GraphDatabaseAPI, sourcePropKey: String, sourcePropValue: String) {
         log2adjust = 1.0 / Math.log(2.0)
         this.log = log
         nodeToRoot = db.traversalDescription()
                 .depthFirst()
                 .relationships(REL.PARENT_OF, Direction.INCOMING)
-                .evaluator(SourceOntologyEvaluator(sourceProperty, sourceOnthology))
+                .evaluator(SourceOntologyEvaluator(sourcePropKey, sourcePropValue))
 
         nodeToLeaf = db.traversalDescription()
                 .depthFirst()
                 .relationships(REL.PARENT_OF, Direction.OUTGOING)
-                .evaluator(SourceOntologyEvaluator(sourceProperty, sourceOnthology))
+                .evaluator(SourceOntologyEvaluator(sourcePropKey, sourcePropValue))
 
         rootToNode = db.traversalDescription()
                 .depthFirst()
                 .relationships(REL.PARENT_OF, Direction.OUTGOING)
-                .evaluator(SourceOntologyEvaluator(sourceProperty, sourceOnthology))
+                .evaluator(SourceOntologyEvaluator(sourcePropKey, sourcePropValue))
     }
 
     @Deprecated("old code")
@@ -104,14 +101,5 @@ class InformationContent {
         child.setProperty(leafCountProperty, leafCount)
 
         return leafCount
-    }
-
-    class SourceOntologyEvaluator(val sourceProperty: String, val sourceOnthology: String): Evaluator {
-        override fun evaluate(path: Path?): Evaluation {
-            if (path!!.endNode().hasProperty(sourceProperty) && path.endNode().getProperty(sourceProperty).equals(sourceOnthology))
-                return Evaluation.INCLUDE_AND_CONTINUE
-            else
-                return Evaluation.EXCLUDE_AND_PRUNE
-        }
     }
 }

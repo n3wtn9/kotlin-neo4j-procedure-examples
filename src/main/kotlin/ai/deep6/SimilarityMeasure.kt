@@ -4,12 +4,10 @@ import ai.deep6.constants.REL
 import org.neo4j.graphdb.Direction
 import org.neo4j.graphdb.Node
 import org.neo4j.graphdb.Path
-import org.neo4j.graphdb.traversal.Evaluation
-import org.neo4j.graphdb.traversal.Evaluator
-import org.neo4j.graphdb.traversal.Evaluators
-import org.neo4j.graphdb.traversal.TraversalDescription
+import org.neo4j.graphdb.traversal.*
 import org.neo4j.kernel.builtinprocs.SchemaProcedure
 import org.neo4j.kernel.internal.GraphDatabaseAPI
+import org.neo4j.logging.Log
 import java.util.stream.Stream
 import kotlin.streams.toList
 
@@ -23,18 +21,25 @@ import kotlin.streams.toList
 class SimilarityMeasure {
 
     val conceptsPath: TraversalDescription
+    val biDiNodePath: BidirectionalTraversalDescription
+    val log: Log
 
-    constructor(db: GraphDatabaseAPI) {
+    constructor(log: Log, db: GraphDatabaseAPI, sourcePropKey: String, sourcePropValue: String) {
+        this.log = log
         conceptsPath = db.traversalDescription()
                 .depthFirst()
-                .relationships(REL.PARENT_OF)
+                .relationships(REL.PARENT_OF, Direction.INCOMING)
+                .evaluator(SourceOntologyEvaluator(sourcePropKey, sourcePropValue))
+                .uniqueness(Uniqueness.NODE_PATH)
+
+        biDiNodePath = db.bidirectionalTraversalDescription()
+                .startSide(conceptsPath)
+                .endSide(conceptsPath)
     }
 
-    fun calcualteSimilarityPathIc(concept1: Node, concept2: Node): Double {
-        // Find paths between two concepts in ontology using traversal description
-        val pathResults = conceptsPath
-                .evaluator(Evaluators.endNodeIs<Any>(Evaluation.INCLUDE_AND_CONTINUE, Evaluation.EXCLUDE_AND_CONTINUE, concept2))
-                .traverse(concept1)
+    fun calculateSimilarityPathIcBiDi(node1: Node, node2: Node): Double {
+        val pathResults = biDiNodePath
+                .traverse(node1, node2)
                 .stream()
                 .toList()
 
@@ -43,7 +48,7 @@ class SimilarityMeasure {
             0 -> return 0.0
             1 -> pathResults.first()
             else -> {
-                println("Ahh multiple paths found between 2 concepts...choosing shortest one.")
+                log.info("Ahh multiple paths found between 2 concepts...choosing shortest one.")
                 pathResults.sortedBy { it.length() }.first()
             }
         }
@@ -54,33 +59,18 @@ class SimilarityMeasure {
             lcsNode = if (rel.startNode.equals(lcsNode)) break else rel.startNode
         }
 
-        val c1Ic = concept1.getProperty("infoContent") as Double
-        val c2Ic = concept2.getProperty("infoContent") as Double
+        val c1Ic = node1.getProperty("infoContent") as Double
+        val c2Ic = node2.getProperty("infoContent") as Double
         val lcsIc = lcsNode.getProperty("infoContent") as Double
-        val distance = c1Ic + c2Ic - 2 * lcsIc
+
+        return similarityPathIcEq(c1Ic, c2Ic, lcsIc)
+    }
+
+    fun similarityPathIcEq(c1IC: Double, c2IC: Double, lcsIC: Double): Double {
+        val distance = c1IC + c2IC - 2 * lcsIC
 
         val similarityScore = 1 / (distance + 1)
 
         return similarityScore
-    }
-
-    fun similarityPathDebug(concept1: Node, concept2: Node): Stream<SchemaProcedure.GraphResult> {
-        val pathResults = conceptsPath
-                .evaluator(Evaluators.endNodeIs<Any>(Evaluation.INCLUDE_AND_CONTINUE, Evaluation.EXCLUDE_AND_CONTINUE, concept2))
-                .traverse(concept1)
-                .stream()
-                .toList()
-
-        // Deal with multiple results
-        val path = when (pathResults.size) {
-            0 -> return listOf(SchemaProcedure.GraphResult(listOf(), listOf())).stream()
-            1 -> pathResults.first()
-            else -> {
-                println("Ahh multiple paths found between 2 concepts...choosing shortest one.")
-                pathResults.sortedBy { it.length() }.first()
-            }
-        }
-
-        return listOf(SchemaProcedure.GraphResult(path.nodes().toList(), path.relationships().toList())).stream()
     }
 }

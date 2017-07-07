@@ -12,23 +12,17 @@ import kotlin.streams.toList
  * Created by newton on 6/29/17.
  */
 class InformationContent {
-    val nodeToRoot: TraversalDescription
     val nodeToLeaf: TraversalDescription
     val rootToNode: TraversalDescription
 
     val log: Log
-    val log2adjust : Double
 
     val leafCountProperty = "leafCount"
     val informationContentProperty = "infoContent"
 
     constructor(log: Log, db: GraphDatabaseAPI, sourcePropKey: String, sourcePropValue: String) {
-        log2adjust = 1.0 / Math.log(2.0)
+
         this.log = log
-        nodeToRoot = db.traversalDescription()
-                .depthFirst()
-                .relationships(REL.PARENT_OF, Direction.INCOMING)
-                .evaluator(SourceOntologyEvaluator(sourcePropKey, sourcePropValue))
 
         nodeToLeaf = db.traversalDescription()
                 .depthFirst()
@@ -41,40 +35,13 @@ class InformationContent {
                 .evaluator(SourceOntologyEvaluator(sourcePropKey, sourcePropValue))
     }
 
-    @Deprecated("old code")
-    fun calculate(startNode: Node): Double {
-        val rootPath = nodeToRoot.traverse(startNode).stream()
-                .filter { !it.endNode().hasRelationship(REL.PARENT_OF, Direction.INCOMING) }
-                .toList()
-
-        if (rootPath.size > 1) log.info("more than one root?!!?")
-
-        val path = rootPath.get(0)
-        val root = path.endNode()
-        val subsumerCount = path.length().toDouble() + 1.0
-//        log.info("str: ${path.endNode().getProperty("str")}, subsumer count: ${path.length() + 1}")
-
-        val leaves = nodeToLeaf.traverse(startNode).stream()
-                .filter { !it.endNode().hasRelationship(REL.PARENT_OF, Direction.OUTGOING) }
-                .toList()
-
-//        println("has x leaves: ${leaves.size}")
-//        leaves.forEach { println("str: ${it.endNode().getProperty("str")}") }
-        val leafCount = leaves.size.toDouble()
-
-        val maxLeaves = nodeToLeaf.traverse(root).stream()
+    fun calculateRootToNodeIC(rootNode: Node) {
+        val maxLeaves = rootToNode.traverse(rootNode).stream()
                 .filter { !it.endNode().hasRelationship(REL.PARENT_OF, Direction.OUTGOING) }
                 .count()
                 .toDouble()
 
-        val denom = Math.log(leafCount / subsumerCount + 1.0)
-        val num = Math.log(maxLeaves + 1.0)
-        val ic = log2adjust * ( num - denom )
-        return ic
-    }
-
-    fun calculateRootToNodeIC(rootNode: Node) {
-        val maxLeaves = rootToNode.traverse(rootNode).stream().filter { !it.endNode().hasRelationship(REL.PARENT_OF, Direction.OUTGOING) }.count().toDouble()
+        val log2adjust = 1.0 / Math.log(2.0)
         val num = Math.log(maxLeaves + 1.0)
 
         rootToNode.traverse(rootNode).stream().forEach {

@@ -61,17 +61,6 @@ class InformationContentSmallGraphTest {
     }
 
     @Test
-    fun helloWorldCalInformationContent() {
-        driver.session().use {
-            it.run("MATCH (n:Concept{str:'root'}) CALL ai.deep6.calculateInfoContent(n,'sab','LIFE') RETURN *")
-            it.run("MATCH (n:Concept{str:'animal'}) CALL ai.deep6.calculateInfoContent(n,'sab','LIFE') RETURN *")
-            it.run("MATCH (n:Concept{str:'vertebrate'}) CALL ai.deep6.calculateInfoContent(n,'sab','LIFE') RETURN *")
-            it.run("MATCH (n:Concept{str:'cat'}) CALL ai.deep6.calculateInfoContent(n,'sab','LIFE') RETURN *")
-            it.run("MATCH (n:Concept{str:'dog'}) CALL ai.deep6.calculateInfoContent(n,'sab','LIFE') RETURN *")
-        }
-    }
-
-    @Test
     fun calculateInfoContentFromRootTest() {
         driver.session().use {
             it.run("MATCH (n:Concept{str:'root'}) CALL ai.deep6.calculateInfoContentFromRoot(n,'sab','LIFE') RETURN *")
@@ -122,11 +111,11 @@ class InformationContentSmallGraphTest {
                 """)
 
             val results = it.run("""
-                MATCH (c1:Concept{str:'dog'}), (c2:Concept{str:'animal'})
+                MATCH (c1:Concept{str:'dog'}), (c2:Concept{str:'cat'})
                 RETURN ai.deep6.similarityPathIc('sab','LIFE',c1,c2)
                 """)
 
-            println(results.single().values().get(0).asDouble())
+            assertEquals(0.5464256933667291, results.single().values().get(0).asDouble() ,0.0)
         }
     }
 }
